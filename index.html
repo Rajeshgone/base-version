@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <!-- ✅ REQUIRED: BASE VERIFICATION -->
+  <meta name="base:app_id" content="69d8a85f34c69936dc95d6d0" />
+
+  <title>Base DeFi App</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .card {
+      width: 350px;
+      padding: 25px;
+      border-radius: 16px;
+      background: #1e293b;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      text-align: center;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: #3b82f6;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .info {
+      margin-top: 15px;
+      font-size: 14px;
+      word-break: break-all;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h2>🚀 Base DeFi App</h2>
+
+    <button onclick="connectWallet()">Connect Wallet</button>
+    <button onclick="switchToBase()">Switch to Base</button>
+    <button onclick="getBalance()">Get Balance</button>
+
+    <div class="info" id="wallet">Wallet: Not connected</div>
+    <div class="info" id="network">Network: Unknown</div>
+    <div class="info" id="balance">Balance: --</div>
+  </div>
+
+<script>
+let userAddress = null;
+
+// Connect Wallet
+async function connectWallet() {
+  if (!window.ethereum) {
+    alert("Install MetaMask");
+    return;
+  }
+
+  try {
+    const accounts = await ethereum.request({
+      method: "eth_requestAccounts"
+    });
+    userAddress = accounts[0];
+    document.getElementById("wallet").innerText =
+      "Wallet: " + userAddress;
+
+    getNetwork();
+  } catch (err) {
+    alert("Connection rejected");
+  }
+}
+
+// Switch to Base Mainnet
+async function switchToBase() {
+  try {
+    await ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: "0x2105" }] // Base Mainnet
+    });
+    getNetwork();
+  } catch (err) {
+    // Add Base if not exists
+    if (err.code === 4902) {
+      await ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [{
+          chainId: "0x2105",
+          chainName: "Base",
+          nativeCurrency: {
+            name: "Ether",
+            symbol: "ETH",
+            decimals: 18
+          },
+          rpcUrls: ["https://mainnet.base.org"],
+          blockExplorerUrls: ["https://basescan.org"]
+        }]
+      });
+    }
+  }
+}
+
+// Get Network
+async function getNetwork() {
+  const chainId = await ethereum.request({ method: "eth_chainId" });
+  if (chainId === "0x2105") {
+    document.getElementById("network").innerText = "Network: Base Mainnet";
+  } else {
+    document.getElementById("network").innerText = "Network: Not Base";
+  }
+}
+
+// Get Balance
+async function getBalance() {
+  if (!userAddress) {
+    alert("Connect wallet first");
+    return;
+  }
+
+  const balance = await ethereum.request({
+    method: "eth_getBalance",
+    params: [userAddress, "latest"]
+  });
+
+  const eth = parseInt(balance, 16) / 1e18;
+
+  document.getElementById("balance").innerText =
+    "Balance: " + eth.toFixed(4) + " ETH";
+}
+</script>
+
+</body>
+</html>
