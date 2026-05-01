@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="base:app_id" content="69d8a85f34c69936dc95d6d0">  
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- ✅ REQUIRED FOR BASE -->
-<meta name="base:app_id" content="69d8a85f34c69936dc95d6d0">
 
 <title>Base Wallet Pro</title>
 
@@ -15,70 +14,148 @@
 body {
   margin:0;
   font-family:Inter;
-  background:#05070c;
-  color:#fff;
+  color:white;
   display:flex;
-}
-.sidebar {
-  width:220px;
-  background:#0b1220;
-  padding:20px;
   height:100vh;
+  overflow:hidden;
 }
-.sidebar div {
-  padding:10px;
+
+/* 🌊 BACKGROUND */
+.bg {
+  position:fixed;
+  width:100%;
+  height:100%;
+  background: radial-gradient(circle at 20% 30%, #1d4ed8, transparent),
+              radial-gradient(circle at 80% 70%, #2563eb, transparent),
+              #020617;
+  z-index:-1;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width:240px;
+  backdrop-filter: blur(20px);
+  background: rgba(15,23,42,0.6);
+  padding:20px;
+  border-right:1px solid rgba(255,255,255,0.05);
+}
+
+.logo {
+  font-size:20px;
+  font-weight:600;
+  color:#3b82f6;
+}
+
+.menu div {
+  padding:12px;
+  margin-top:10px;
+  border-radius:10px;
   cursor:pointer;
+  color:#cbd5e1;
 }
+.menu div:hover {
+  background:rgba(255,255,255,0.05);
+}
+
+/* MAIN */
 .main {
   flex:1;
-  padding:20px;
+  padding:40px;
+  overflow:auto;
 }
+
+/* HERO */
+.hero {
+  text-align:center;
+  margin-bottom:40px;
+}
+
+.hero .circle {
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  background:#2563eb;
+  margin:auto;
+}
+
+.hero h1 {
+  font-size:36px;
+  margin:10px 0;
+}
+
+.hero p {
+  color:#94a3b8;
+}
+
+/* CARD */
 .card {
-  background:#0f172a;
+  background: rgba(15,23,42,0.6);
+  backdrop-filter: blur(20px);
+  border-radius:20px;
   padding:20px;
-  border-radius:12px;
   margin-top:20px;
+  border:1px solid rgba(255,255,255,0.05);
 }
-button {
-  padding:10px;
-  margin-top:10px;
-  border:none;
-  border-radius:8px;
-  background:#3b82f6;
-  color:white;
-  cursor:pointer;
-}
+
+/* INPUT */
 input {
   width:100%;
-  padding:10px;
+  padding:12px;
   margin-top:10px;
-  border-radius:8px;
+  border-radius:10px;
   border:none;
   background:#1e293b;
   color:white;
 }
-.tx { border-bottom:1px solid #1f2937; padding:8px; }
+
+/* BUTTON */
+button {
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#3b82f6;
+  color:white;
+  margin-top:10px;
+  cursor:pointer;
+}
+
+/* TX */
+.tx {
+  padding:10px;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+}
 </style>
 </head>
 
 <body>
 
+<div class="bg"></div>
+
+<!-- SIDEBAR -->
 <div class="sidebar">
-  <h3 style="color:#3b82f6;">Base</h3>
-  <div onclick="show('dashboard')">Dashboard</div>
-  <div onclick="show('send')">Send</div>
-  <div onclick="show('swap')">Swap</div>
-  <div onclick="show('bridge')">Bridge</div>
-  <div onclick="show('activity')">Activity</div>
+  <div class="logo">Base</div>
+  <div class="menu">
+    <div onclick="show('dashboard')">Dashboard</div>
+    <div onclick="show('send')">Send</div>
+    <div onclick="show('activity')">Activity</div>
+  </div>
 </div>
 
+<!-- MAIN -->
 <div class="main">
 
-<h2>Base Wallet</h2>
-<button onclick="connect()">Connect Wallet</button>
+<!-- HERO -->
+<div class="hero">
+  <div class="circle"></div>
+  <h1>Base Wallet</h1>
+  <p>Modern onchain wallet experience</p>
+  <button onclick="connect()">Connect Wallet</button>
+</div>
 
+<!-- BALANCE -->
 <div class="card">
-  <p>Wallet: <span id="wallet">Not connected</span></p>
+  <h3>Wallet</h3>
+  <p id="wallet">Not connected</p>
   <p>ETH: <span id="eth">--</span></p>
   <p>USDC: <span id="usdc">--</span></p>
 </div>
@@ -92,19 +169,32 @@ input {
   <button onclick="sendUSDC()">Send USDC</button>
 </div>
 
-<!-- SWAP -->
+
 <div class="card section" id="swap">
-  <h3>Swap (Basic)</h3>
-  <button onclick="swap()">Swap ETH → USDC</button>
+  <h3>Swap</h3>
+
+  <label>From</label>
+  <select id="fromToken">
+    <option value="ETH">ETH</option>
+    <option value="USDC">USDC</option>
+  </select>
+
+  <input id="fromAmount" placeholder="Amount" oninput="getQuote()">
+
+  <label>To</label>
+  <select id="toToken">
+    <option value="USDC">USDC</option>
+    <option value="ETH">ETH</option>
+  </select>
+
+  <input id="toAmount" placeholder="You receive" disabled>
+
+  <p id="rate" style="color:#94a3b8;font-size:12px;"></p>
+
+  <button onclick="executeSwap()">Swap</button>
 </div>
 
-<!-- BRIDGE -->
-<div class="card section" id="bridge">
-  <h3>Bridge Quote</h3>
-  <button onclick="bridge()">Get Quote</button>
-  <pre id="bridgeResult"></pre>
-</div>
-
+  
 <!-- ACTIVITY -->
 <div class="card section" id="activity">
   <h3>Activity</h3>
@@ -117,28 +207,25 @@ input {
 let user;
 const USDC="0xd9aaec86b65d86f6a7b5c1c42ffa531710b6cae9";
 
-// NAV
 function show(id){
   document.querySelectorAll('.section').forEach(e=>e.style.display='none');
   document.getElementById(id).style.display='block';
 }
 show('send');
 
-// CONNECT
 async function connect(){
-  const acc = await ethereum.request({method:"eth_requestAccounts"});
-  user = acc[0];
-  document.getElementById("wallet").innerText = user;
+  const acc=await ethereum.request({method:"eth_requestAccounts"});
+  user=acc[0];
+  document.getElementById("wallet").innerText=user;
   load();
 }
 
-// LOAD BALANCES
 async function load(){
-  const eth = await ethereum.request({
+  const eth=await ethereum.request({
     method:"eth_getBalance",
     params:[user,"latest"]
   });
-  document.getElementById("eth").innerText = (parseInt(eth,16)/1e18).toFixed(4);
+  document.getElementById("eth").innerText=(parseInt(eth,16)/1e18).toFixed(4);
 
   const data="0x70a08231"+user.slice(2).padStart(64,"0");
 
@@ -147,10 +234,9 @@ async function load(){
     params:[{to:USDC,data},"latest"]
   });
 
-  document.getElementById("usdc").innerText = (parseInt(usdc,16)/1e6).toFixed(2);
+  document.getElementById("usdc").innerText=(parseInt(usdc,16)/1e6).toFixed(2);
 }
 
-// SEND ETH
 async function sendETH(){
   const to=document.getElementById("to").value;
   const amt=document.getElementById("amount").value;
@@ -167,7 +253,6 @@ async function sendETH(){
   addTx("Sent ETH");
 }
 
-// SEND USDC
 async function sendUSDC(){
   const to=document.getElementById("to").value;
   const amt=document.getElementById("amount").value;
@@ -184,19 +269,6 @@ async function sendUSDC(){
   addTx("Sent USDC");
 }
 
-// SWAP (basic placeholder)
-async function swap(){
-  alert("Swap requires router params (use production version for full swap)");
-}
-
-// BRIDGE (LI.FI API)
-async function bridge(){
-  const res = await fetch("https://li.quest/v1/quote?fromChain=1&toChain=8453&fromToken=ETH&toToken=ETH&fromAmount=1000000000000000");
-  const data = await res.json();
-  document.getElementById("bridgeResult").innerText = JSON.stringify(data,null,2);
-}
-
-// ACTIVITY
 function addTx(t){
   const div=document.createElement("div");
   div.className="tx";
