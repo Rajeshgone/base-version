@@ -1,175 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- ✅ REQUIRED -->
-<meta name="base:app_id" content="69d8a85f34c69936dc95d6d0" />
+<!-- ✅ REQUIRED FOR BASE -->
+<meta name="base:app_id" content="69d8a85f34c69936dc95d6d0">
 
-<title>Base Pro Wallet</title>
+<title>Base Wallet Pro</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
 body {
   margin:0;
-  font-family:'Inter',sans-serif;
+  font-family:Inter;
   background:#05070c;
-  color:white;
+  color:#fff;
   display:flex;
 }
-
-/* SIDEBAR */
 .sidebar {
-  width:240px;
-  background:linear-gradient(180deg,#0d1b3a,#020617);
+  width:220px;
+  background:#0b1220;
   padding:20px;
   height:100vh;
 }
-.sidebar h2 { color:#3b82f6; }
-.menu { margin-top:20px; }
-.menu div {
-  padding:12px;
-  border-radius:10px;
-  margin-bottom:8px;
+.sidebar div {
+  padding:10px;
   cursor:pointer;
 }
-.menu div:hover { background:#1f2937; }
-
-/* MAIN */
 .main {
   flex:1;
   padding:20px;
 }
-
-/* HEADER */
-.header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+.card {
+  background:#0f172a;
+  padding:20px;
+  border-radius:12px;
+  margin-top:20px;
 }
 button {
-  padding:10px 16px;
+  padding:10px;
+  margin-top:10px;
   border:none;
-  border-radius:10px;
+  border-radius:8px;
   background:#3b82f6;
   color:white;
   cursor:pointer;
 }
-
-/* CARD */
-.card {
-  background:#0f172a;
-  padding:20px;
-  border-radius:16px;
-  margin-top:20px;
-}
-
-/* GRID */
-.grid {
-  display:grid;
-  grid-template-columns:2fr 1fr;
-  gap:20px;
-}
-
-/* INPUT */
 input {
   width:100%;
-  padding:12px;
+  padding:10px;
   margin-top:10px;
-  border-radius:10px;
+  border-radius:8px;
   border:none;
   background:#1e293b;
   color:white;
 }
-
-/* TRANSACTIONS */
-.tx {
-  margin-top:10px;
-  padding:10px;
-  border-bottom:1px solid #1f2937;
-}
+.tx { border-bottom:1px solid #1f2937; padding:8px; }
 </style>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
-  <h2>Base</h2>
-  <div class="menu">
-    <div>Dashboard</div>
-    <div>Send</div>
-    <div>Swap</div>
-    <div>Bridge</div>
-    <div>Transactions</div>
-    <div>NFTs</div>
-  </div>
-
-  <div style="margin-top:40px;">
-    <small>Wallet</small>
-    <div id="wallet">Not connected</div>
-  </div>
+  <h3 style="color:#3b82f6;">Base</h3>
+  <div onclick="show('dashboard')">Dashboard</div>
+  <div onclick="show('send')">Send</div>
+  <div onclick="show('swap')">Swap</div>
+  <div onclick="show('bridge')">Bridge</div>
+  <div onclick="show('activity')">Activity</div>
 </div>
 
-<!-- MAIN -->
 <div class="main">
 
-  <div class="header">
-    <h2>Welcome back 👋</h2>
-    <button onclick="connect()">Connect Wallet</button>
-  </div>
+<h2>Base Wallet</h2>
+<button onclick="connect()">Connect Wallet</button>
 
-  <!-- GRID -->
-  <div class="grid">
+<div class="card">
+  <p>Wallet: <span id="wallet">Not connected</span></p>
+  <p>ETH: <span id="eth">--</span></p>
+  <p>USDC: <span id="usdc">--</span></p>
+</div>
 
-    <!-- LEFT -->
-    <div>
+<!-- SEND -->
+<div class="card section" id="send">
+  <h3>Send</h3>
+  <input id="to" placeholder="Address">
+  <input id="amount" placeholder="Amount">
+  <button onclick="sendETH()">Send ETH</button>
+  <button onclick="sendUSDC()">Send USDC</button>
+</div>
 
-      <!-- BALANCE -->
-      <div class="card">
-        <h3>Total Balance</h3>
-        <h1 id="total">$0.00</h1>
-        <p id="eth">0 ETH</p>
+<!-- SWAP -->
+<div class="card section" id="swap">
+  <h3>Swap (Basic)</h3>
+  <button onclick="swap()">Swap ETH → USDC</button>
+</div>
 
-        <button onclick="sendSection()">Send</button>
-      </div>
+<!-- BRIDGE -->
+<div class="card section" id="bridge">
+  <h3>Bridge Quote</h3>
+  <button onclick="bridge()">Get Quote</button>
+  <pre id="bridgeResult"></pre>
+</div>
 
-      <!-- TRANSACTIONS -->
-      <div class="card">
-        <h3>Recent Transactions</h3>
-        <div id="txs"></div>
-      </div>
-
-    </div>
-
-    <!-- RIGHT -->
-    <div>
-
-      <div class="card">
-        <h3>Assets</h3>
-        <p>ETH: <span id="ethBal">--</span></p>
-        <p>USDC: <span id="usdcBal">--</span></p>
-      </div>
-
-      <!-- SEND -->
-      <div class="card" id="sendBox" style="display:none;">
-        <h3>Send USDC</h3>
-        <input id="to" placeholder="Address" />
-        <input id="amount" placeholder="Amount" />
-        <button onclick="sendUSDC()">Send</button>
-      </div>
-
-    </div>
-
-  </div>
+<!-- ACTIVITY -->
+<div class="card section" id="activity">
+  <h3>Activity</h3>
+  <div id="txs"></div>
+</div>
 
 </div>
 
 <script>
-let user = null;
-const USDC = "0xd9aaec86b65d86f6a7b5c1c42ffa531710b6cae9";
+let user;
+const USDC="0xd9aaec86b65d86f6a7b5c1c42ffa531710b6cae9";
+
+// NAV
+function show(id){
+  document.querySelectorAll('.section').forEach(e=>e.style.display='none');
+  document.getElementById(id).style.display='block';
+}
+show('send');
 
 // CONNECT
 async function connect(){
@@ -185,62 +138,69 @@ async function load(){
     method:"eth_getBalance",
     params:[user,"latest"]
   });
+  document.getElementById("eth").innerText = (parseInt(eth,16)/1e18).toFixed(4);
 
-  const ethVal = parseInt(eth,16)/1e18;
+  const data="0x70a08231"+user.slice(2).padStart(64,"0");
 
-  document.getElementById("ethBal").innerText = ethVal.toFixed(4);
-  document.getElementById("eth").innerText = ethVal.toFixed(4)+" ETH";
-
-  // USDC
-  const data = "0x70a08231"+user.slice(2).padStart(64,"0");
-
-  const usdc = await ethereum.request({
+  const usdc=await ethereum.request({
     method:"eth_call",
-    params:[{to:USDC,data:data},"latest"]
+    params:[{to:USDC,data},"latest"]
   });
 
-  const usdcVal = parseInt(usdc,16)/1e6;
-
-  document.getElementById("usdcBal").innerText = usdcVal.toFixed(2);
-
-  const total = (ethVal*3000 + usdcVal).toFixed(2);
-  document.getElementById("total").innerText = "$"+total;
+  document.getElementById("usdc").innerText = (parseInt(usdc,16)/1e6).toFixed(2);
 }
 
-// SHOW SEND
-function sendSection(){
-  document.getElementById("sendBox").style.display="block";
+// SEND ETH
+async function sendETH(){
+  const to=document.getElementById("to").value;
+  const amt=document.getElementById("amount").value;
+
+  await ethereum.request({
+    method:"eth_sendTransaction",
+    params:[{
+      from:user,
+      to,
+      value:(Number(amt)*1e18).toString(16)
+    }]
+  });
+
+  addTx("Sent ETH");
 }
 
 // SEND USDC
 async function sendUSDC(){
-  const to = document.getElementById("to").value;
-  const amt = document.getElementById("amount").value;
+  const to=document.getElementById("to").value;
+  const amt=document.getElementById("amount").value;
 
-  const value = (Number(amt)*1e6).toString(16).padStart(64,"0");
+  const value=(Number(amt)*1e6).toString(16).padStart(64,"0");
 
-  const data =
-    "0xa9059cbb"+
-    to.slice(2).padStart(64,"0")+
-    value;
+  const data="0xa9059cbb"+to.slice(2).padStart(64,"0")+value;
 
-  const tx = await ethereum.request({
+  await ethereum.request({
     method:"eth_sendTransaction",
-    params:[{
-      from:user,
-      to:USDC,
-      data:data
-    }]
+    params:[{from:user,to:USDC,data}]
   });
 
-  addTx("Sent "+amt+" USDC");
+  addTx("Sent USDC");
 }
 
-// LOCAL TX LIST
-function addTx(text){
-  const div = document.createElement("div");
+// SWAP (basic placeholder)
+async function swap(){
+  alert("Swap requires router params (use production version for full swap)");
+}
+
+// BRIDGE (LI.FI API)
+async function bridge(){
+  const res = await fetch("https://li.quest/v1/quote?fromChain=1&toChain=8453&fromToken=ETH&toToken=ETH&fromAmount=1000000000000000");
+  const data = await res.json();
+  document.getElementById("bridgeResult").innerText = JSON.stringify(data,null,2);
+}
+
+// ACTIVITY
+function addTx(t){
+  const div=document.createElement("div");
   div.className="tx";
-  div.innerText=text;
+  div.innerText=t;
   document.getElementById("txs").prepend(div);
 }
 </script>
