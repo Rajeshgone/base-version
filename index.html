@@ -4,140 +4,155 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<meta name="base:app_id" content="69d8a85f34c69936dc95d6d0" />
+  <!-- ✅ REQUIRED FOR BASE -->
+  <meta name="base:app_id" content="69d8a85f34c69936dc95d6d0" />
 
-  <title>Base DeFi App</title>
+  <title>Base Wallet</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      font-family: 'Inter', sans-serif;
+      background: #0a0b0f;
+      color: #fff;
+    }
+    .container {
+      max-width: 420px;
+      margin: auto;
+      padding: 20px;
     }
     .card {
-      width: 350px;
-      padding: 25px;
+      background: #111318;
       border-radius: 16px;
-      background: #1e293b;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-      text-align: center;
+      padding: 20px;
+      margin-bottom: 15px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      margin-top: 8px;
+      background: #1f2937;
+      color: white;
     }
     button {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
+      border-radius: 12px;
       border: none;
-      border-radius: 10px;
-      background: #3b82f6;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
       margin-top: 10px;
+      font-weight: 600;
+      cursor: pointer;
     }
-    .info {
-      margin-top: 15px;
-      font-size: 14px;
-      word-break: break-all;
-    }
+    .primary { background: #3b82f6; color: white; }
+    .secondary { background: #1f2937; color: white; }
+    .label { font-size: 13px; color: #9ca3af; }
   </style>
 </head>
 
 <body>
+<div class="container">
+
+  <h2>💳 Base Wallet</h2>
+
   <div class="card">
-    <h2>🚀 Base DeFi App</h2>
+    <div class="label">Wallet</div>
+    <div id="wallet">Not connected</div>
 
-    <button onclick="connectWallet()">Connect Wallet</button>
-    <button onclick="switchToBase()">Switch to Base</button>
-    <button onclick="getBalance()">Get Balance</button>
+    <div class="label" style="margin-top:10px;">ETH Balance</div>
+    <div id="eth">--</div>
 
-    <div class="info" id="wallet">Wallet: Not connected</div>
-    <div class="info" id="network">Network: Unknown</div>
-    <div class="info" id="balance">Balance: --</div>
+    <div class="label" style="margin-top:10px;">USDC Balance</div>
+    <div id="usdc">--</div>
   </div>
 
+  <button class="primary" onclick="connect()">Connect Wallet</button>
+  <button class="secondary" onclick="switchBase()">Switch to Base</button>
+
+  <div class="card">
+    <div class="label">Send USDC</div>
+
+    <input id="to" placeholder="Recipient address" />
+    <input id="amount" placeholder="Amount (USDC)" />
+
+    <button class="primary" onclick="sendUSDC()">Send USDC</button>
+  </div>
+
+</div>
+
 <script>
-let userAddress = null;
+let user = null;
 
-// Connect Wallet
-async function connectWallet() {
-  if (!window.ethereum) {
-    alert("Install MetaMask");
-    return;
-  }
+// Base USDC contract
+const USDC = "0xd9aaec86b65d86f6a7b5c1c42ffa531710b6cae9";
 
-  try {
-    const accounts = await ethereum.request({
-      method: "eth_requestAccounts"
-    });
-    userAddress = accounts[0];
-    document.getElementById("wallet").innerText =
-      "Wallet: " + userAddress;
-
-    getNetwork();
-  } catch (err) {
-    alert("Connection rejected");
-  }
+// Connect
+async function connect() {
+  const acc = await ethereum.request({ method: "eth_requestAccounts" });
+  user = acc[0];
+  document.getElementById("wallet").innerText = user;
+  loadBalances();
 }
 
-// Switch to Base Mainnet
-async function switchToBase() {
-  try {
-    await ethereum.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: "0x2105" }] // Base Mainnet
-    });
-    getNetwork();
-  } catch (err) {
-    // Add Base if not exists
-    if (err.code === 4902) {
-      await ethereum.request({
-        method: "wallet_addEthereumChain",
-        params: [{
-          chainId: "0x2105",
-          chainName: "Base",
-          nativeCurrency: {
-            name: "Ether",
-            symbol: "ETH",
-            decimals: 18
-          },
-          rpcUrls: ["https://mainnet.base.org"],
-          blockExplorerUrls: ["https://basescan.org"]
-        }]
-      });
-    }
-  }
+// Switch Base
+async function switchBase() {
+  await ethereum.request({
+    method: "wallet_switchEthereumChain",
+    params: [{ chainId: "0x2105" }]
+  });
 }
 
-// Get Network
-async function getNetwork() {
-  const chainId = await ethereum.request({ method: "eth_chainId" });
-  if (chainId === "0x2105") {
-    document.getElementById("network").innerText = "Network: Base Mainnet";
-  } else {
-    document.getElementById("network").innerText = "Network: Not Base";
-  }
-}
-
-// Get Balance
-async function getBalance() {
-  if (!userAddress) {
-    alert("Connect wallet first");
-    return;
-  }
-
-  const balance = await ethereum.request({
+// Load balances
+async function loadBalances() {
+  const ethBal = await ethereum.request({
     method: "eth_getBalance",
-    params: [userAddress, "latest"]
+    params: [user, "latest"]
   });
 
-  const eth = parseInt(balance, 16) / 1e18;
+  document.getElementById("eth").innerText =
+    (parseInt(ethBal,16)/1e18).toFixed(4) + " ETH";
 
-  document.getElementById("balance").innerText =
-    "Balance: " + eth.toFixed(4) + " ETH";
+  // USDC balance (call ERC20)
+  const data = "0x70a08231" + user.slice(2).padStart(64,"0");
+
+  const usdcBal = await ethereum.request({
+    method: "eth_call",
+    params: [{
+      to: USDC,
+      data: data
+    }, "latest"]
+  });
+
+  document.getElementById("usdc").innerText =
+    (parseInt(usdcBal,16)/1e6).toFixed(2) + " USDC";
+}
+
+// Send USDC
+async function sendUSDC() {
+  const to = document.getElementById("to").value;
+  const amt = document.getElementById("amount").value;
+
+  const amountHex = (Number(amt) * 1e6).toString(16);
+  const paddedAmount = amountHex.padStart(64,"0");
+
+  const data =
+    "0xa9059cbb" +
+    to.slice(2).padStart(64,"0") +
+    paddedAmount;
+
+  await ethereum.request({
+    method: "eth_sendTransaction",
+    params: [{
+      from: user,
+      to: USDC,
+      data: data
+    }]
+  });
+
+  alert("Transaction sent!");
 }
 </script>
 
